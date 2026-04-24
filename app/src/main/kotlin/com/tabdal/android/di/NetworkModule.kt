@@ -7,6 +7,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tabdal.android.BuildConfig
 import com.tabdal.android.data.remote.api.TabdalApi
 import com.tabdal.android.data.remote.interceptors.AuthInterceptor
+import com.tabdal.android.data.remote.interceptors.MockInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,13 +39,16 @@ object NetworkModule {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
                     else HttpLoggingInterceptor.Level.NONE
         }
-        return OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
-            .addInterceptor(logging)
+        val builder = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
-            .build()
+        if (BuildConfig.USE_MOCK) {
+            builder.addInterceptor(MockInterceptor())
+        } else {
+            builder.addInterceptor(authInterceptor)
+        }
+        return builder.addInterceptor(logging).build()
     }
 
     @Provides

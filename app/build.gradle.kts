@@ -35,13 +35,15 @@ android {
         // ── API keys lues depuis local.properties (injectées par CI ou .env local) ──
         val mapsApiKey = localProp("MAPS_API_KEY", "YOUR_MAPS_API_KEY")
         val baseUrl    = localProp("BASE_URL", "https://api.tabdal.ma/v1/")
+        val useMock    = localProp("USE_MOCK", "false").toBoolean()
 
         // Manifest placeholder pour Google Maps SDK
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
         // BuildConfig pour accès côté Kotlin
-        buildConfigField("String", "BASE_URL",    "\"$baseUrl\"")
-        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        buildConfigField("String",  "BASE_URL",    "\"$baseUrl\"")
+        buildConfigField("String",  "MAPS_API_KEY", "\"$mapsApiKey\"")
+        buildConfigField("Boolean", "USE_MOCK",     "$useMock")
     }
 
     signingConfigs {
