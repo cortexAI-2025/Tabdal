@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,7 +89,7 @@ fun CreateListingScreen(
                         value = selectedType.labelFr, onValueChange = {},
                         readOnly = true, label = { Text("Type de bien *") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor(), shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
                     )
                     ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
                         PropertyType.entries.forEach { type ->
@@ -104,7 +105,7 @@ fun CreateListingScreen(
                     value = selectedTransaction.labelFr, onValueChange = {},
                     readOnly = true, label = { Text("Transaction *") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = txExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(), shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
                 )
                 ExposedDropdownMenu(expanded = txExpanded, onDismissRequest = { txExpanded = false }) {
                     TransactionType.entries.forEach { tx ->
@@ -211,7 +212,7 @@ fun CreateListingScreen(
                     value = selectedCondition.labelFr, onValueChange = {},
                     readOnly = true, label = { Text("État du bien") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = conditionExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(), shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
                 )
                 ExposedDropdownMenu(expanded = conditionExpanded, onDismissRequest = { conditionExpanded = false }) {
                     PropertyCondition.entries.forEach { cond ->
