@@ -1,0 +1,271 @@
+name: Android CI – Build APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'claude/**'
+      - 'develop'
+      - 'release/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type (debug | release)'
+        required: false
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+      upload_artifact:
+        description: 'Upload APK as artifact'
+        required: false
+        default: true
+        type: boolean
+
+# Cancel previous runs on same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '17'
+  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.configuration-cache=true -Dorg.gradle.parallel=true'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1 : Build Debug APK
+  # ─────────────────────────────────────────────
+  build-debug:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+    if: github.event.inputs.build_type != 'release'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      # ── Inject Firebase config ─────────────────
+      - name: Write google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+            echo "✅ google-services.json injected from secret"
+          else
+            echo "⚠️  GOOGLE_SERVICES_JSON secret not set – using placeholder file"
+          fi
+
+      # ── Inject API keys into local.properties ──
+      - name: Write local.properties
+        env:
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          echo "MAPS_API_KEY=${MAPS_API_KEY:-YOUR_MAPS_API_KEY}" >> local.properties
+          echo "BASE_URL=${BASE_URL:-https://api.tabdal.ma/v1/}" >> local.properties
+
+      # ── Lint ──────────────────────────────────
+      - name: Run Lint
+        run: ./gradlew lintDebug --continue
+        continue-on-error: true
+
+      - name: Upload Lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report-debug
+          path: app/build/reports/lint-results-debug.html
+          retention-days: 7
+
+      # ── Build ─────────────────────────────────
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      # ── Get version info ──────────────────────
+      - name: Get version info
+        id: version
+        run: |
+          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          VERSION_CODE=$(grep 'versionCode' app/build.gradle.kts | head -1 | sed 's/[^0-9]//g')
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
+          echo "version_code=${VERSION_CODE}" >> $GITHUB_OUTPUT
+          echo "sha_short=${SHA_SHORT}" >> $GITHUB_OUTPUT
+          echo "apk_name=tabdal-debug-${VERSION_NAME}-${SHA_SHORT}.apk" >> $GITHUB_OUTPUT
+
+      # ── Rename APK ────────────────────────────
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/debug/app-debug.apk \
+             app/build/outputs/apk/debug/${{ steps.version.outputs.apk_name }}
+
+      # ── Upload APK ────────────────────────────
+      - name: Upload Debug APK
+        if: ${{ github.event.inputs.upload_artifact != 'false' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.apk_name }}
+          path: app/build/outputs/apk/debug/${{ steps.version.outputs.apk_name }}
+          retention-days: 14
+          if-no-files-found: error
+
+      # ── Build summary ─────────────────────────
+      - name: Build summary
+        if: success()
+        run: |
+          echo "## ✅ Debug APK Built" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Champ | Valeur |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.version_code }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ steps.version.outputs.sha_short }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branche** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **APK** | \`${{ steps.version.outputs.apk_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          APK_SIZE=$(du -sh app/build/outputs/apk/debug/*.apk | cut -f1)
+          echo "| **Taille APK** | ${APK_SIZE} |" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # Job 2 : Build Release APK (manuel ou release/**)
+  # ─────────────────────────────────────────────
+  build-release:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+    if: |
+      github.event.inputs.build_type == 'release' ||
+      startsWith(github.ref, 'refs/heads/release/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      # ── Inject Firebase config ─────────────────
+      - name: Write google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          else
+            echo "❌ GOOGLE_SERVICES_JSON secret is required for release build"
+            exit 1
+          fi
+
+      # ── Inject API keys ────────────────────────
+      - name: Write local.properties
+        env:
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          echo "MAPS_API_KEY=${MAPS_API_KEY}" >> local.properties
+          echo "BASE_URL=${BASE_URL:-https://api.tabdal.ma/v1/}" >> local.properties
+
+      # ── Keystore setup ────────────────────────
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > app/tabdal-release.jks
+            echo "✅ Keystore decoded"
+          else
+            echo "⚠️  No keystore provided – building unsigned release"
+          fi
+
+      # ── Build ─────────────────────────────────
+      - name: Build Release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -f app/tabdal-release.jks ]; then
+            ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file="$PWD/app/tabdal-release.jks" \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
+              --stacktrace
+          else
+            ./gradlew assembleRelease --stacktrace
+          fi
+
+      # ── Get version info ──────────────────────
+      - name: Get version info
+        id: version
+        run: |
+          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          VERSION_CODE=$(grep 'versionCode' app/build.gradle.kts | head -1 | sed 's/[^0-9]//g')
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
+          echo "version_code=${VERSION_CODE}" >> $GITHUB_OUTPUT
+          echo "apk_name=tabdal-release-${VERSION_NAME}-${SHA_SHORT}.apk" >> $GITHUB_OUTPUT
+
+      # ── Rename APK ────────────────────────────
+      - name: Rename APK
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+          mv "$APK_PATH" "app/build/outputs/apk/release/${{ steps.version.outputs.apk_name }}"
+
+      # ── Upload APK ────────────────────────────
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.apk_name }}
+          path: app/build/outputs/apk/release/${{ steps.version.outputs.apk_name }}
+          retention-days: 30
+          if-no-files-found: error
+
+      # ── Build summary ─────────────────────────
+      - name: Build summary
+        if: success()
+        run: |
+          echo "## 🚀 Release APK Built" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Champ | Valeur |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.version_code }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branche** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **APK** | \`${{ steps.version.outputs.apk_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          APK_SIZE=$(du -sh app/build/outputs/apk/release/*.apk | cut -f1)
+          echo "| **Taille APK** | ${APK_SIZE} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Signé** | ${{ secrets.KEYSTORE_BASE64 != '' && '✅ Oui' || '⚠️ Non (pas de keystore)' }} |" >> $GITHUB_STEP_SUMMARY
