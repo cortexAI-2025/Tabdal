@@ -1,0 +1,10 @@
+-keep class com.tabdal.android.data.remote.dto.** { *; }
+-keep class com.tabdal.android.domain.models.** { *; }
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn okhttp3.**
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keep class com.squareup.moshi.** { *; }
+-keep @com.squareup.moshi.JsonClass class * { *; }
+-keep class com.google.firebase.** { *; }
