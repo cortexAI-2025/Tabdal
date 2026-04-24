@@ -70,9 +70,7 @@ fun FilterScreen(
             // Property type
             Text("Type de bien", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf(null to "Tous les types") + PropertyType.entries.map { it to it.labelFr }
-            }.let { types ->
-                types.forEach { (type, label) ->
+                (listOf(null to "Tous les types") + PropertyType.entries.map { it to it.labelFr }).forEach { (type, label) ->
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         RadioButton(selected = selectedType == type, onClick = { selectedType = type })
                         Spacer(Modifier.width(8.dp))
