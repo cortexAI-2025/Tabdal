@@ -18,7 +18,7 @@ import com.tabdal.android.domain.models.Conversation
 import com.tabdal.android.presentation.ui.components.AvatarInitials
 import com.tabdal.android.presentation.ui.components.TabdalTopBar
 import com.tabdal.android.presentation.viewmodels.MessageViewModel
-import com.tabdal.android.utils.Extensions.toRelativeTime
+import com.tabdal.android.utils.toRelativeTime
 
 @Composable
 fun ConversationListScreen(
@@ -96,21 +96,6 @@ private fun ConversationItem(conversation: Conversation, onClick: () -> Unit) {
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
             }
-        }
-    }
-}
-
-private fun Long.toRelativeTime() = com.tabdal.android.utils.Extensions.toRelativeTime(this)
-
-private object Extensions {
-    fun Long.toRelativeTime(): String {
-        val now = System.currentTimeMillis()
-        val diff = now - this
-        return when {
-            diff < 60_000 -> "À l'instant"
-            diff < 3_600_000 -> "${diff / 60_000}min"
-            diff < 86_400_000 -> "${diff / 3_600_000}h"
-            else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.FRANCE).format(java.util.Date(this))
         }
     }
 }
