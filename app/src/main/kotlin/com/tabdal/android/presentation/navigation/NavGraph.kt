@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.*
 import androidx.navigation.compose.*
 import com.tabdal.android.presentation.ui.admin.AdminScreen
@@ -60,7 +61,7 @@ fun TabdalNavGraph(
                                         shape = androidx.compose.foundation.shape.CircleShape,
                                         color = MaterialTheme.colorScheme.primary
                                     ) {
-                                        Icon(item.icon, item.label, modifier = Modifier.padding(androidx.compose.ui.unit.dp * 8),
+                                        Icon(item.icon, item.label, modifier = Modifier.padding(8.dp),
                                             tint = MaterialTheme.colorScheme.onPrimary)
                                     }
                                 } else {

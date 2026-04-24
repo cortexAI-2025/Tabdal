@@ -79,22 +79,17 @@ fun CreateListingScreen(
 
             // Section: Category
             SectionHeader("Catégorie")
-            ExposedDropdownMenuBox(
-                expanded = false,
-                onExpandedChange = {}
-            ) {
-                var typeExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = it }) {
-                    OutlinedTextField(
-                        value = selectedType.labelFr, onValueChange = {},
-                        readOnly = true, label = { Text("Type de bien *") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
-                    )
-                    ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
-                        PropertyType.entries.forEach { type ->
-                            DropdownMenuItem(text = { Text(type.labelFr) }, onClick = { selectedType = type; typeExpanded = false })
-                        }
+            var typeExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = it }) {
+                OutlinedTextField(
+                    value = selectedType.labelFr, onValueChange = {},
+                    readOnly = true, label = { Text("Type de bien *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
+                    PropertyType.entries.forEach { type ->
+                        DropdownMenuItem(text = { Text(type.labelFr) }, onClick = { selectedType = type; typeExpanded = false })
                     }
                 }
             }
