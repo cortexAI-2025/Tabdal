@@ -23,7 +23,6 @@ import com.tabdal.android.domain.models.ReportReason
 import com.tabdal.android.domain.models.ReportTarget
 import com.tabdal.android.presentation.ui.components.*
 import com.tabdal.android.presentation.viewmodels.ListingViewModel
-import com.tabdal.android.utils.Extensions.toFormattedDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
