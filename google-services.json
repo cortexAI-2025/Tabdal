@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "355473758254",
+    "project_id": "tabdal-e8cd1",
+    "storage_bucket": "tabdal-e8cd1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355473758254:android:0e0f5549c05f86e464e7bf",
+        "android_client_info": {
+          "package_name": "com.tabdal.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYq5dBxa9vHGoTKvrE25mIGIB5xIh6YzU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
