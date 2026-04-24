@@ -22,7 +22,6 @@ datastore = "1.1.2"
 moshi = "1.15.2"
 splashscreen = "1.0.1"
 accompanistPermissions = "0.36.0"
-imageCropper = "4.5.0"
 lottie = "6.6.2"
 
 [libraries]

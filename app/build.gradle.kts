@@ -1,3 +1,16 @@
+import java.util.Properties
+
+// ── Lecture de local.properties (clés API, secrets CI) ──────────────────────
+val localProperties = Properties().also { props ->
+    rootProject.file("local.properties").takeIf { it.exists() }
+        ?.inputStream()?.use { props.load(it) }
+}
+
+fun localProp(key: String, fallback: String = ""): String =
+    localProperties.getProperty(key, fallback)
+
+// ────────────────────────────────────────────────────────────────────────────
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,23 +32,55 @@ android {
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://api.tabdal.ma/v1/\"")
-        buildConfigField("String", "MAPS_API_KEY", "\"YOUR_MAPS_API_KEY\"")
+        // ── API keys lues depuis local.properties (injectées par CI ou .env local) ──
+        val mapsApiKey = localProp("MAPS_API_KEY", "YOUR_MAPS_API_KEY")
+        val baseUrl    = localProp("BASE_URL", "https://api.tabdal.ma/v1/")
+
+        // Manifest placeholder pour Google Maps SDK
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
+        // BuildConfig pour accès côté Kotlin
+        buildConfigField("String", "BASE_URL",    "\"$baseUrl\"")
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            // Renseigné via -Pandroid.injected.signing.* dans le workflow CI,
+            // ou via les propriétés ci-dessous pour une signature locale.
+            val keystorePath = localProp("KEYSTORE_PATH")
+            val keystorePass = localProp("KEYSTORE_PASSWORD")
+            val keyAlias     = localProp("KEY_ALIAS")
+            val keyPass      = localProp("KEY_PASSWORD")
+
+            if (keystorePath.isNotBlank()) {
+                storeFile     = file(keystorePath)
+                storePassword = keystorePass
+                this.keyAlias     = keyAlias
+                keyPassword   = keyPass
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled   = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            // N'utilise la config release que si un keystore est défini,
+            // sinon Gradle utilisera le signing injecté par -Pandroid.injected.*
+            val keystorePath = localProp("KEYSTORE_PATH")
+            if (keystorePath.isNotBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
-            isDebuggable = true
+            isDebuggable       = true
             applicationIdSuffix = ".debug"
+            versionNameSuffix  = "-debug"
         }
     }
 
@@ -49,7 +94,7 @@ android {
     }
 
     buildFeatures {
-        compose = true
+        compose     = true
         buildConfig = true
     }
 
@@ -61,7 +106,7 @@ android {
 }
 
 dependencies {
-    // Core
+    // Core AndroidX
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
@@ -69,7 +114,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.splashscreen)
 
-    // Compose
+    // Compose BOM
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
@@ -81,7 +126,7 @@ dependencies {
     // Navigation
     implementation(libs.nav.compose)
 
-    // Hilt
+    // Hilt DI
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
@@ -132,7 +177,7 @@ dependencies {
     // Lottie
     implementation(libs.lottie.compose)
 
-    // Testing
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
