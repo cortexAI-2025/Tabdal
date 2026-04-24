@@ -36,7 +36,7 @@ concurrency:
 
 env:
   JAVA_VERSION: '17'
-  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.configuration-cache=true -Dorg.gradle.parallel=true'
+  GRADLE_OPTS: '-Dorg.gradle.daemon=false'
 
 jobs:
   # ─────────────────────────────────────────────
