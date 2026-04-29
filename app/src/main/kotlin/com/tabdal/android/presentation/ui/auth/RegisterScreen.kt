@@ -1,5 +1,6 @@
 package com.tabdal.android.presentation.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,9 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tabdal.android.R
 import com.tabdal.android.presentation.ui.components.TabdalButton
 import com.tabdal.android.presentation.ui.components.TabdalTextField
 import com.tabdal.android.presentation.viewmodels.AuthViewModel
@@ -46,11 +50,14 @@ fun RegisterScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(48.dp))
-        Text("TABDAL", style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(40.dp))
+        Image(
+            painter = painterResource(R.drawable.logo_tabdal),
+            contentDescription = "Logo Tabdal",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxWidth(0.65f).heightIn(max = 120.dp)
+        )
+        Spacer(Modifier.height(24.dp))
         Text("Créer un compte", style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(24.dp))

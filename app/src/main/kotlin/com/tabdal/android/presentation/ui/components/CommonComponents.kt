@@ -31,13 +31,15 @@ fun TabdalTopBar(
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour",
+                        tint = MaterialTheme.colorScheme.primary)
                 }
             }
         },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface,
+            actionIconContentColor = MaterialTheme.colorScheme.primary
         )
     )
 }
