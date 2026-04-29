@@ -1,6 +1,6 @@
 package com.tabdal.android.presentation.ui.auth
 
-import androidx.compose.foundation.Image
+import coil.compose.AsyncImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,7 +18,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,8 +50,8 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(40.dp))
-        Image(
-            painter = painterResource(R.drawable.logo_tabdal),
+        AsyncImage(
+            model = R.drawable.logo_tabdal,
             contentDescription = "Logo Tabdal",
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth(0.65f).heightIn(max = 120.dp)
