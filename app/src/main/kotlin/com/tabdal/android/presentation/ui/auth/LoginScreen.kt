@@ -1,6 +1,6 @@
 package com.tabdal.android.presentation.ui.auth
 
-import coil.compose.AsyncImage
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -34,7 +35,6 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     var email    by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -53,14 +53,13 @@ fun LoginScreen(
     ) {
         Spacer(Modifier.height(56.dp))
 
-        // Logo Tabdal
-        AsyncImage(
-            model = R.drawable.logo_tabdal,
-            contentDescription = "Logo Tabdal",
+        Image(
+            painter = painterResource(R.drawable.logo_tabdal),
+            contentDescription = "TABDAL",
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .fillMaxWidth(0.78f)
-                .heightIn(max = 160.dp)
+                .fillMaxWidth(0.80f)
+                .wrapContentHeight()
         )
 
         Spacer(Modifier.height(48.dp))
@@ -71,7 +70,6 @@ fun LoginScreen(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(Modifier.height(24.dp))
 
         TabdalTextField(
