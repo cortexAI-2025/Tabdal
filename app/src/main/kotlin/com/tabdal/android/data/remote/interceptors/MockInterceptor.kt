@@ -57,7 +57,7 @@ class MockInterceptor : Interceptor {
           "token": "mock_token_tabdal_demo_2024",
           "user": {
             "_id": "user_demo_001",
-            "email": "demo@tabdal.ma",
+            "email": "demo@balal.ma",
             "full_name": "Utilisateur Demo",
             "phone": "0661234567",
             "city": "Casablanca",
@@ -71,7 +71,7 @@ class MockInterceptor : Interceptor {
         private val USER_PROFILE = """
         {
           "_id": "user_demo_001",
-          "email": "demo@tabdal.ma",
+          "email": "demo@balal.ma",
           "full_name": "Utilisateur Demo",
           "phone": "0661234567",
           "city": "Casablanca",

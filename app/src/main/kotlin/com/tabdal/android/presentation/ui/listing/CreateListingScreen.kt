@@ -4,23 +4,26 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.AddAPhoto
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,6 +46,9 @@ fun CreateListingScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val userId = viewModel.currentUserId() ?: ""
 
+    var step by remember { mutableIntStateOf(0) }
+    val stepCount = 5
+
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -60,9 +66,7 @@ fun CreateListingScreen(
     var selectedCondition by remember { mutableStateOf(PropertyCondition.GOOD) }
     var selectedPhotos by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
-    val photoLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetMultipleContents()
-    ) { uris ->
+    val photoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         val remaining = Constants.MAX_PHOTOS - selectedPhotos.size
         selectedPhotos = selectedPhotos + uris.take(remaining)
     }
@@ -71,181 +75,159 @@ fun CreateListingScreen(
         if (uiState.success) { viewModel.clearSuccess(); onCreated() }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TabdalTopBar(title = "Créer une annonce", onBack = onBack)
+    val canContinue = when (step) {
+        0 -> title.isNotBlank()
+        2 -> city.isNotBlank()
+        3 -> (price.toLongOrNull() ?: 0L) > 0 && (surface.toDoubleOrNull() ?: 0.0) > 0
+        else -> true
+    }
+    val goBack = { if (step == 0) onBack() else step-- }
 
-        Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
+    Column(Modifier.fillMaxSize()) {
+        // Barre : retour / fermer + progression segmentée
+        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = goBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onBack) { Icon(Icons.Default.Close, "Fermer") }
+        }
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            repeat(stepCount) { i ->
+                Box(Modifier.weight(1f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(
+                    if (i <= step) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant))
+            }
+        }
+
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
-
-            // Section: Category
-            SectionHeader("Catégorie")
-            var typeExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = it }) {
-                OutlinedTextField(
-                    value = selectedType.labelFr, onValueChange = {},
-                    readOnly = true, label = { Text("Type de bien *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
-                )
-                ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
-                    PropertyType.entries.forEach { type ->
-                        DropdownMenuItem(text = { Text(type.labelFr) }, onClick = { selectedType = type; typeExpanded = false })
-                    }
+            when (step) {
+                0 -> {
+                    StepTitle("Commençons par l'essentiel !")
+                    Text("*Champs obligatoires", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TabdalTextField(value = title, onValueChange = { if (it.length <= 200) title = it },
+                        label = "Quel est le titre de votre annonce ? *")
+                    Text("${title.length}/200", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.align(Alignment.End))
                 }
-            }
-
-            var txExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = txExpanded, onExpandedChange = { txExpanded = it }) {
-                OutlinedTextField(
-                    value = selectedTransaction.labelFr, onValueChange = {},
-                    readOnly = true, label = { Text("Transaction *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = txExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
-                )
-                ExposedDropdownMenu(expanded = txExpanded, onDismissRequest = { txExpanded = false }) {
-                    TransactionType.entries.forEach { tx ->
-                        DropdownMenuItem(text = { Text(tx.labelFr) }, onClick = { selectedTransaction = tx; txExpanded = false })
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            // Section: Photos
-            SectionHeader("Photos de l'annonce (max ${Constants.MAX_PHOTOS})")
-            if (selectedPhotos.isEmpty()) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.fillMaxWidth().height(120.dp).clickable {
-                        if (selectedPhotos.size < Constants.MAX_PHOTOS) photoLauncher.launch("image/*")
-                    }
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Icon(Icons.Default.Add, null, modifier = Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.height(4.dp))
-                        Text("Ajouter jusqu'à ${Constants.MAX_PHOTOS} photos", style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            } else {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(selectedPhotos) { uri ->
-                        Box(modifier = Modifier.size(100.dp)) {
-                            AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)))
-                            IconButton(
-                                onClick = { selectedPhotos = selectedPhotos - uri },
-                                modifier = Modifier.align(Alignment.TopEnd).size(24.dp)
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), RoundedCornerShape(12.dp))
-                            ) { Icon(Icons.Default.Close, null, modifier = Modifier.size(14.dp)) }
+                1 -> {
+                    StepTitle("Ajoutez des photos")
+                    Text("Mettez en valeur votre bien ! Plus il y a de détails, plus votre annonce sera de qualité.",
+                        style = MaterialTheme.typography.bodyMedium)
+                    Text("Vos photos (max ${Constants.MAX_PHOTOS})", style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold)
+                    val slots = Constants.MAX_PHOTOS
+                    val items: List<Uri?> = (0 until slots).map { selectedPhotos.getOrNull(it) }
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Surface(shape = RoundedCornerShape(16.dp), shadowElevation = 4.dp,
+                            modifier = Modifier.fillMaxWidth().height(110.dp).clickable {
+                                if (selectedPhotos.size < Constants.MAX_PHOTOS) photoLauncher.launch("image/*") }) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                Icon(Icons.Outlined.AddAPhoto, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
+                                Spacer(Modifier.height(6.dp))
+                                Text("Ajouter des photos", fontWeight = FontWeight.SemiBold)
+                            }
                         }
-                    }
-                    if (selectedPhotos.size < Constants.MAX_PHOTOS) {
-                        item {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.size(100.dp).clickable { photoLauncher.launch("image/*") }
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary)
+                        items.chunked(2).forEachIndexed { row, pair ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                pair.forEachIndexed { col, uri ->
+                                    val idx = row * 2 + col
+                                    Box(Modifier.weight(1f).height(120.dp).clip(RoundedCornerShape(16.dp))
+                                        .border(if (idx == 0) 2.dp else 1.dp,
+                                            if (idx == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                                            RoundedCornerShape(16.dp))
+                                        .clickable { if (uri == null) photoLauncher.launch("image/*") },
+                                        contentAlignment = Alignment.Center) {
+                                        if (uri != null) {
+                                            AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize())
+                                            IconButton(onClick = { selectedPhotos = selectedPhotos - uri },
+                                                modifier = Modifier.align(Alignment.TopEnd).size(28.dp)
+                                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f), CircleShape)) {
+                                                Icon(Icons.Default.Close, null, Modifier.size(14.dp))
+                                            }
+                                        } else {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Icon(Icons.Outlined.PhotoCamera, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
+                                                Text("Photo n°${idx + 1}", color = MaterialTheme.colorScheme.primary)
+                                            }
+                                        }
+                                        if (idx == 0) Surface(color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(50),
+                                            modifier = Modifier.align(Alignment.TopStart).padding(6.dp)) {
+                                            Text("Photo de couverture", color = Color.White, style = MaterialTheme.typography.labelSmall,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
+                                        }
+                                    }
                                 }
+                                if (pair.size == 1) Spacer(Modifier.weight(1f))
                             }
                         }
                     }
                 }
-            }
-
-            HorizontalDivider()
-
-            // Section: Address
-            SectionHeader("Localisation")
-            TabdalTextField(value = city, onValueChange = { city = it }, label = "Ville *")
-            TabdalTextField(value = district, onValueChange = { district = it }, label = "Quartier")
-            TabdalTextField(value = address, onValueChange = { address = it }, label = "Adresse")
-
-            HorizontalDivider()
-
-            // Section: Details
-            SectionHeader("Informations du bien")
-            TabdalTextField(value = title, onValueChange = { title = it }, label = "Titre de l'annonce *")
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                TabdalTextField(value = price, onValueChange = { price = it }, label = "Prix (MAD) *",
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                TabdalTextField(value = surface, onValueChange = { surface = it }, label = "Surface (m²) *",
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = isNegotiable, onCheckedChange = { isNegotiable = it })
-                Spacer(Modifier.width(8.dp))
-                Text("Prix négociable")
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                TabdalTextField(value = rooms, onValueChange = { rooms = it }, label = "Chambres",
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                TabdalTextField(value = bathrooms, onValueChange = { bathrooms = it }, label = "SDB",
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                TabdalTextField(value = floor, onValueChange = { floor = it }, label = "Étage",
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                TabdalTextField(value = yearBuilt, onValueChange = { yearBuilt = it }, label = "Année",
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            }
-
-            // Condition
-            var conditionExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = conditionExpanded, onExpandedChange = { conditionExpanded = it }) {
-                OutlinedTextField(
-                    value = selectedCondition.labelFr, onValueChange = {},
-                    readOnly = true, label = { Text("État du bien") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = conditionExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable), shape = RoundedCornerShape(12.dp)
-                )
-                ExposedDropdownMenu(expanded = conditionExpanded, onDismissRequest = { conditionExpanded = false }) {
-                    PropertyCondition.entries.forEach { cond ->
-                        DropdownMenuItem(text = { Text(cond.labelFr) }, onClick = { selectedCondition = cond; conditionExpanded = false })
-                    }
+                2 -> {
+                    StepTitle("Où se situe votre bien ?")
+                    TabdalTextField(value = city, onValueChange = { city = it }, label = "Ville *")
+                    TabdalTextField(value = district, onValueChange = { district = it }, label = "Quartier")
+                    TabdalTextField(value = address, onValueChange = { address = it }, label = "Numéro, nom de rue")
                 }
-            }
-
-            TabdalTextField(value = description, onValueChange = { description = it }, label = "Description",
-                singleLine = false, minLines = 4, maxLines = 8)
-
-            uiState.error?.let { error ->
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
-                    Text(error, color = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.padding(12.dp))
+                3 -> {
+                    StepTitle("Informations du bien")
+                    EnumDropdown("Type de bien *", selectedType, PropertyType.entries, { it.labelFr }) { selectedType = it }
+                    EnumDropdown("Transaction *", selectedTransaction, TransactionType.entries, { it.labelFr }) { selectedTransaction = it }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TabdalTextField(value = price, onValueChange = { price = it }, label = "Prix (MAD) *",
+                            modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        TabdalTextField(value = surface, onValueChange = { surface = it }, label = "Surface (m²) *",
+                            modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = isNegotiable, onCheckedChange = { isNegotiable = it })
+                        Text("Prix négociable")
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TabdalTextField(value = rooms, onValueChange = { rooms = it }, label = "Chambres",
+                            modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        TabdalTextField(value = bathrooms, onValueChange = { bathrooms = it }, label = "SDB",
+                            modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TabdalTextField(value = floor, onValueChange = { floor = it }, label = "Étage",
+                            modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        TabdalTextField(value = yearBuilt, onValueChange = { yearBuilt = it }, label = "Année",
+                            modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                    }
+                    EnumDropdown("État du bien", selectedCondition, PropertyCondition.entries, { it.labelFr }) { selectedCondition = it }
+                }
+                else -> {
+                    StepTitle("Décrivez votre bien")
+                    TabdalTextField(value = description, onValueChange = { description = it }, label = "Description",
+                        singleLine = false, minLines = 6, maxLines = 12)
+                    uiState.error?.let { error ->
+                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                            Text(error, color = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.padding(12.dp))
+                        }
+                    }
                 }
             }
         }
 
-        // Submit button
         Surface(shadowElevation = 8.dp) {
             TabdalButton(
-                text = "Publier l'annonce",
+                text = if (step == stepCount - 1) "Publier l'annonce" else "Continuer",
+                enabled = canContinue,
                 onClick = {
-                    val listing = Listing(
-                        id = "", title = title, description = description,
-                        price = price.toLongOrNull() ?: 0L,
-                        isNegotiable = isNegotiable,
-                        surface = surface.toDoubleOrNull() ?: 0.0,
-                        rooms = rooms.toIntOrNull() ?: 0,
-                        bathrooms = bathrooms.toIntOrNull() ?: 0,
-                        floor = floor.toIntOrNull(),
-                        yearBuilt = yearBuilt.toIntOrNull(),
-                        condition = selectedCondition, type = selectedType,
-                        transactionType = selectedTransaction,
-                        city = city, district = district, address = address,
-                        sellerId = userId
-                    )
-                    viewModel.createListing(listing, selectedPhotos)
+                    if (step < stepCount - 1) step++ else {
+                        val listing = Listing(
+                            id = "", title = title, description = description,
+                            price = price.toLongOrNull() ?: 0L, isNegotiable = isNegotiable,
+                            surface = surface.toDoubleOrNull() ?: 0.0,
+                            rooms = rooms.toIntOrNull() ?: 0, bathrooms = bathrooms.toIntOrNull() ?: 0,
+                            floor = floor.toIntOrNull(), yearBuilt = yearBuilt.toIntOrNull(),
+                            condition = selectedCondition, type = selectedType,
+                            transactionType = selectedTransaction,
+                            city = city, district = district, address = address, sellerId = userId
+                        )
+                        viewModel.createListing(listing, selectedPhotos)
+                    }
                 },
                 isLoading = uiState.isLoading,
                 modifier = Modifier.padding(16.dp)
@@ -255,7 +237,25 @@ fun CreateListingScreen(
 }
 
 @Composable
-private fun SectionHeader(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.primary)
+private fun StepTitle(text: String) {
+    Text(text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> EnumDropdown(label: String, value: T, options: List<T>, labelOf: (T) -> String, onSelect: (T) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = labelOf(value), onValueChange = {}, readOnly = true, label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            shape = RoundedCornerShape(28.dp)
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { opt ->
+                DropdownMenuItem(text = { Text(labelOf(opt)) }, onClick = { onSelect(opt); expanded = false })
+            }
+        }
+    }
 }

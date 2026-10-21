@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +19,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tabdal.android.domain.models.Conversation
 import com.tabdal.android.presentation.ui.components.AvatarInitials
-import com.tabdal.android.presentation.ui.components.TabdalTopBar
+import com.tabdal.android.presentation.ui.components.EmptyState
+import com.tabdal.android.presentation.ui.components.ScreenTitle
 import com.tabdal.android.presentation.viewmodels.MessageViewModel
 import com.tabdal.android.utils.toRelativeTime
 
@@ -27,24 +31,36 @@ fun ConversationListScreen(
 ) {
     val conversations by viewModel.conversations.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TabdalTopBar(title = "Messages")
+    var filter by remember { mutableIntStateOf(0) }
+    val filters = listOf("Tout", "Non lus", "Ventes")
+    val shown = when (filter) {
+        1 -> conversations.filter { it.unreadCount > 0 }
+        2 -> conversations.filter { it.sellerId == viewModel.currentUserId() }
+        else -> conversations
+    }
 
-        if (conversations.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("💬", style = MaterialTheme.typography.headlineLarge)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Aucun message", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(4.dp))
-                    Text("Contactez un vendeur pour démarrer une conversation.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScreenTitle("Mes messages")
+        Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            filters.forEachIndexed { i, label ->
+                FilterChip(
+                    selected = filter == i, onClick = { filter = i }, label = { Text(label) },
+                    shape = RoundedCornerShape(50),
+                    leadingIcon = if (filter == i) { { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) } } else null
+                )
             }
+        }
+        Spacer(Modifier.height(8.dp))
+        if (shown.isEmpty()) {
+            EmptyState(
+                Icons.Outlined.ChatBubbleOutline,
+                if (filter == 1) "Bravo ! Vous n'avez pas de messages non lus." else "Aucun message",
+                if (filter == 1) "Assurez-vous d'avoir répondu aux questions de tous vos contacts."
+                else "Contactez un vendeur pour démarrer une conversation."
+            )
         } else {
             LazyColumn {
-                items(conversations, key = { it.id }) { conversation ->
+                items(shown, key = { it.id }) { conversation ->
                     ConversationItem(conversation = conversation, onClick = { onConversationClick(conversation.id) })
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }

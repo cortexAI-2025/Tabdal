@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tabdal</string>
-    <string name="app_tagline">immobilier Maroc</string>
+    <string name="app_name">Balal</string>
+    <string name="app_tagline">Immobilier P2P Maroc</string>
 
     <!-- Auth -->
     <string name="login">Se connecter</string>
@@ -47,7 +47,7 @@
     <string name="save_listing">Sauvegarder</string>
     <string name="report_listing">Signaler</string>
     <string name="mark_as_sold">Marquer comme vendu</string>
-    <string name="legal_disclaimer">⚖️ Tabdal ne remplace pas un notaire. Consultez un professionnel juridique pour toute transaction immobilière.</string>
+    <string name="legal_disclaimer">⚖️ BALAL ne remplace pas un notaire. Consultez un professionnel juridique pour toute transaction immobilière.</string>
 
     <!-- Search & Filters -->
     <string name="search">Rechercher</string>

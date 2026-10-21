@@ -3,9 +3,11 @@ package com.tabdal.android.presentation.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.*
@@ -27,11 +29,11 @@ fun TabdalNavGraph(
     val startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
 
     val bottomNavItems = listOf(
-        BottomNavItem(Screen.Home.route, "Annonces", Icons.Default.Home),
-        BottomNavItem(Screen.Favorites.route, "Favoris", Icons.Default.Favorite),
-        BottomNavItem(Screen.CreateListing.route, "Vendre", Icons.Default.AddCircle),
-        BottomNavItem(Screen.Conversations.route, "Chat", Icons.Default.ChatBubble),
-        BottomNavItem(Screen.Profile.route, "Compte", Icons.Default.Person)
+        BottomNavItem(Screen.Home.route, "Rechercher", Icons.Outlined.Search, Icons.Filled.Search),
+        BottomNavItem(Screen.Favorites.route, "Favoris", Icons.Outlined.FavoriteBorder, Icons.Filled.Favorite),
+        BottomNavItem(Screen.CreateListing.route, "Publier", Icons.Outlined.AddBox, Icons.Filled.AddBox),
+        BottomNavItem(Screen.Conversations.route, "Messages", Icons.Outlined.ChatBubbleOutline, Icons.Filled.ChatBubble),
+        BottomNavItem(Screen.Profile.route, "Compte", Icons.Outlined.AccountCircle, Icons.Filled.AccountCircle)
     )
 
     val mainRoutes = bottomNavItems.map { it.route }
@@ -43,7 +45,7 @@ fun TabdalNavGraph(
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     bottomNavItems.forEach { item ->
                         val isSelected = currentRoute == item.route
                         NavigationBarItem(
@@ -55,19 +57,14 @@ fun TabdalNavGraph(
                                     restoreState = true
                                 }
                             },
-                            icon = {
-                                if (item.route == Screen.CreateListing.route) {
-                                    Surface(
-                                        shape = androidx.compose.foundation.shape.CircleShape,
-                                        color = MaterialTheme.colorScheme.primary
-                                    ) {
-                                        Icon(item.icon, item.label, modifier = Modifier.padding(8.dp),
-                                            tint = MaterialTheme.colorScheme.onPrimary)
-                                    }
-                                } else {
-                                    Icon(item.icon, item.label)
-                                }
-                            },
+                            icon = { Icon(if (isSelected) item.selectedIcon else item.icon, item.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                indicatorColor = Color.Transparent
+                            ),
                             label = {
                                 Text(item.label, style = MaterialTheme.typography.labelSmall,
                                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal)
@@ -227,5 +224,6 @@ fun TabdalNavGraph(
 private data class BottomNavItem(
     val route: String,
     val label: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector
 )

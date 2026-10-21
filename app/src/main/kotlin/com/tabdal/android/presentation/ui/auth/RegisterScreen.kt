@@ -56,8 +56,8 @@ fun RegisterScreen(
         Spacer(Modifier.height(40.dp))
 
         Image(
-            painter = painterResource(R.drawable.logo_tabdal),
-            contentDescription = "TABDAL",
+            painter = painterResource(R.drawable.logo_balal),
+            contentDescription = "BALAL",
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth(0.65f)

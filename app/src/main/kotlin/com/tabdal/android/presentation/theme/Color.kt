@@ -2,33 +2,32 @@ package com.tabdal.android.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── Charte graphique Tabdal ─────────────────────────────────────────────────
-// Olive / kaki : couleur principale issue du logo
-val Primary       = Color(0xFF596318)   // olive foncé (logo vert)
-val PrimaryDark   = Color(0xFF3A4010)   // olive très foncé
-val PrimaryLight  = Color(0xFF7A8B2E)   // olive moyen
-val Secondary     = Color(0xFF8B6914)   // or chaud (complément olive)
-val SecondaryLight= Color(0xFFA67D1E)
-val Tertiary      = Color(0xFFD4B86A)   // or sable
+// ── Charte graphique BALAL ──────────────────────────────────────────────────
+val Primary        = Color(0xFF144E62)   // bleu profond (texte du logo)
+val PrimaryDark    = Color(0xFF0C3547)
+val PrimaryLight   = Color(0xFF2F8DB3)   // bleu clair (toit gauche du logo)
+val Secondary      = Color(0xFFE07B2F)   // orange (toit droit du logo) – CTA
+val SecondaryLight = Color(0xFFF0975A)
+val Tertiary       = Color(0xFFF7F1E3)   // crème du logo principal
 
-// ── Light scheme ─────────────────────────────────────────────────────────────
-val BackgroundLight     = Color(0xFFFFFFFF)   // fond blanc (demande client)
-val SurfaceLight        = Color(0xFFFFFFFF)
-val OnSurfaceLight      = Color(0xFF1C1C1E)
-val OnSurfaceVariantLight = Color(0xFF636366)
-val OutlineLight        = Color(0xFFD1D1D6)
-val SurfaceVariantLight = Color(0xFFF2F3EE)   // blanc cassé légèrement olive
+// Light
+val BackgroundLight       = Color(0xFFFFFFFF)
+val SurfaceLight          = Color(0xFFFFFFFF)
+val SurfaceVariantLight   = Color(0xFFF1F4F6)   // champs / puces / cartes
+val OnSurfaceLight        = Color(0xFF0C2B38)
+val OnSurfaceVariantLight = Color(0xFF5B6B74)
+val OutlineLight          = Color(0xFFC9D2D8)
 
-// ── Dark scheme ──────────────────────────────────────────────────────────────
-val BackgroundDark      = Color(0xFF1C1E0A)   // fond sombre olive (logo PNG06)
-val SurfaceDark         = Color(0xFF2A2D10)
-val SurfaceVariantDark  = Color(0xFF363A18)
-val OnSurfaceDark       = Color(0xFFFFFFFF)
-val OnSurfaceVariantDark= Color(0xFFB8B9A0)
-val OutlineDark         = Color(0xFF4A4E28)
+// Dark
+val BackgroundDark        = Color(0xFF0F1E26)
+val SurfaceDark           = Color(0xFF16303C)
+val SurfaceVariantDark    = Color(0xFF1F3B49)
+val OnSurfaceDark         = Color(0xFFFFFFFF)
+val OnSurfaceVariantDark  = Color(0xFFA9BAC3)
+val OutlineDark           = Color(0xFF3A5666)
 
-// ── Sémantiques ──────────────────────────────────────────────────────────────
-val Success  = Color(0xFF34C759)
-val ErrorRed = Color(0xFFFF3B30)
+// Sémantiques
+val Success  = Color(0xFF2E9E5B)
+val ErrorRed = Color(0xFFD93025)
 val Warning  = Color(0xFFFF9500)
-val Info     = Color(0xFF007AFF)
+val Info     = Color(0xFF2F8DB3)

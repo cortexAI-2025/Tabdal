@@ -16,7 +16,7 @@ class TabdalMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        val title = remoteMessage.notification?.title ?: remoteMessage.data["title"] ?: "Tabdal"
+        val title = remoteMessage.notification?.title ?: remoteMessage.data["title"] ?: "BALAL"
         val body  = remoteMessage.notification?.body  ?: remoteMessage.data["body"]  ?: ""
         showNotification(title, body)
     }

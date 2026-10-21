@@ -54,8 +54,8 @@ fun LoginScreen(
         Spacer(Modifier.height(56.dp))
 
         Image(
-            painter = painterResource(R.drawable.logo_tabdal),
-            contentDescription = "TABDAL",
+            painter = painterResource(R.drawable.logo_balal),
+            contentDescription = "BALAL",
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth(0.80f)

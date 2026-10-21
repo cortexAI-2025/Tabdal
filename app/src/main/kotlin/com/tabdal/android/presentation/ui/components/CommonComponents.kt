@@ -51,13 +51,16 @@ fun TabdalButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    colors: ButtonColors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.secondary,
+        disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+    )
 ) {
     Button(
         onClick = onClick,
         modifier = modifier.fillMaxWidth().height(52.dp),
         enabled = enabled && !isLoading,
-        shape = RoundedCornerShape(12.dp),
+        shape = CircleShape,
         colors = colors
     ) {
         if (isLoading) {
@@ -96,10 +99,11 @@ fun TabdalTextField(
             minLines = minLines,
             maxLines = maxLines,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor   = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor    = MaterialTheme.colorScheme.primary
             )
         )
         if (isError && errorMessage != null) {
@@ -179,7 +183,7 @@ fun LegalDisclaimerBanner(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth()
     ) {
         Text(
-            "⚖️ Tabdal ne remplace pas un notaire. Consultez un professionnel juridique pour toute transaction immobilière.",
+            "⚖️ BALAL ne remplace pas un notaire. Consultez un professionnel juridique pour toute transaction immobilière.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(12.dp)
