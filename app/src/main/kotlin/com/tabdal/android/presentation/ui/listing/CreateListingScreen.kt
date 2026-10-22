@@ -81,7 +81,7 @@ fun CreateListingScreen(
         3 -> (price.toLongOrNull() ?: 0L) > 0 && (surface.toDoubleOrNull() ?: 0.0) > 0
         else -> true
     }
-    val goBack = { if (step == 0) onBack() else step-- }
+    val goBack: () -> Unit = { if (step == 0) onBack() else step -= 1 }
 
     Column(Modifier.fillMaxSize()) {
         // Barre : retour / fermer + progression segmentée
@@ -215,7 +215,7 @@ fun CreateListingScreen(
                 text = if (step == stepCount - 1) "Publier l'annonce" else "Continuer",
                 enabled = canContinue,
                 onClick = {
-                    if (step < stepCount - 1) step++ else {
+                    if (step < stepCount - 1) step += 1 else {
                         val listing = Listing(
                             id = "", title = title, description = description,
                             price = price.toLongOrNull() ?: 0L, isNegotiable = isNegotiable,
