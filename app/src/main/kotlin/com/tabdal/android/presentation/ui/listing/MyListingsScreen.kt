@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,20 +49,10 @@ fun MyListingsScreen(
 
         when {
             uiState.isLoading -> LoadingView()
-            uiState.myListings.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Aucune annonce", style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(16.dp))
-                        Button(onClick = onCreateListing) {
-                            Icon(Icons.Default.Add, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Créer une annonce")
-                        }
-                    }
-                }
-            }
+            uiState.myListings.isEmpty() -> EmptyState(
+                Icons.Outlined.Storefront, "Vous n'avez pas encore d'annonce",
+                "Publiez votre premier bien en quelques minutes."
+            ) { TabdalButton(text = "Publier une annonce", onClick = onCreateListing) }
             else -> {
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),

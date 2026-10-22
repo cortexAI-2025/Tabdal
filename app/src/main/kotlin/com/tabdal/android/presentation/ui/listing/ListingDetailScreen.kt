@@ -1,6 +1,8 @@
 package com.tabdal.android.presentation.ui.listing
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -93,10 +95,11 @@ fun ListingDetailScreen(
                                 }
                             }
                         } else {
-                            Box(modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(0.dp)),
+                            Box(modifier = Modifier.fillMaxWidth().height(220.dp)
+                                .background(MaterialTheme.colorScheme.tertiary),
                                 contentAlignment = Alignment.Center) {
                                 Icon(Icons.Default.Home, null, modifier = Modifier.size(64.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
                             }
                         }
                     }
@@ -178,7 +181,9 @@ fun ListingDetailScreen(
                     Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
                             onClick = { onContactSeller(listing.sellerId) },
-                            modifier = Modifier.weight(1f).height(52.dp)
+                            modifier = Modifier.weight(1f).height(52.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                         ) {
                             Icon(Icons.Default.Message, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))

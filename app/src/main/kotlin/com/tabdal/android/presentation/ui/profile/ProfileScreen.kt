@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tabdal.android.presentation.ui.components.AvatarInitials
-import com.tabdal.android.presentation.ui.components.TabdalTopBar
+import com.tabdal.android.presentation.ui.components.ScreenTitle
 import com.tabdal.android.presentation.viewmodels.AuthViewModel
 import com.tabdal.android.presentation.viewmodels.ProfileViewModel
 
@@ -38,14 +38,14 @@ fun ProfileScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        TabdalTopBar(title = "Compte")
+        ScreenTitle("Mon compte")
 
         // User card
         currentUser?.let { user ->
             Card(
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -132,7 +132,7 @@ private fun ProfileMenuItem(
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
-    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface
+    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary
 ) {
     Surface(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -143,7 +143,8 @@ private fun ProfileMenuItem(
             Surface(shape = RoundedCornerShape(10.dp), color = tint.copy(alpha = 0.1f)) {
                 Icon(icon, null, modifier = Modifier.padding(8.dp).size(20.dp), tint = tint)
             }
-            Text(label, modifier = Modifier.weight(1f), color = tint)
+            Text(label, modifier = Modifier.weight(1f),
+                color = if (tint == MaterialTheme.colorScheme.error) tint else MaterialTheme.colorScheme.onSurface)
             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
