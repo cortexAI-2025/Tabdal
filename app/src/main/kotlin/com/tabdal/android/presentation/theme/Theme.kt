@@ -1,6 +1,5 @@
 package com.tabdal.android.presentation.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -28,36 +27,11 @@ private val LightColorScheme = lightColorScheme(
     outlineVariant     = Color(0xFFE3E8EB)
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary            = PrimaryLight,
-    onPrimary          = Color.White,
-    primaryContainer   = PrimaryDark,
-    onPrimaryContainer = Color(0xFFCDE6F1),
-    secondary          = SecondaryLight,
-    onSecondary        = Color.White,
-    secondaryContainer = Color(0xFF5A2A05),
-    onSecondaryContainer = Color(0xFFFFDCC2),
-    tertiary           = Tertiary,
-    onTertiary         = Color(0xFF0C2B38),
-    background         = BackgroundDark,
-    onBackground       = OnSurfaceDark,
-    surface            = SurfaceDark,
-    onSurface          = OnSurfaceDark,
-    surfaceVariant     = SurfaceVariantDark,
-    onSurfaceVariant   = OnSurfaceVariantDark,
-    error              = ErrorRed,
-    onError            = Color.White,
-    outline            = OutlineDark,
-    outlineVariant     = Color(0xFF2A4553)
-)
-
+/** Thème clair imposé : fond blanc et charte BALAL, quel que soit le réglage du téléphone. */
 @Composable
-fun TabdalTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
+fun TabdalTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
+        colorScheme = LightColorScheme,
         typography  = TabdalTypography,
         content     = content
     )

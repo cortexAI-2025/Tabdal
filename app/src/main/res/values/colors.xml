@@ -8,7 +8,6 @@
     <color name="secondary_light">#F0975A</color>
     <color name="cream">#F7F1E3</color>
 
-    <color name="background_dark">#0F1E26</color>
     <color name="background_light">#FFFFFF</color>
 
     <color name="success">#2E9E5B</color>
@@ -17,6 +16,6 @@
     <color name="info">#2F8DB3</color>
 
     <!-- Splash & Launcher -->
-    <color name="splash_background">#F7F1E3</color>
+    <color name="splash_background">#FFFFFF</color>
     <color name="launcher_background">#F7F1E3</color>
 </resources>

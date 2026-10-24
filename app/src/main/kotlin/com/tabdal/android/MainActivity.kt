@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,7 +22,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            TabdalTheme(darkTheme = isSystemInDarkTheme()) {
+            TabdalTheme {
                 val authViewModel: AuthViewModel = hiltViewModel()
                 val isLoggedIn = authViewModel.isLoggedIn
 
